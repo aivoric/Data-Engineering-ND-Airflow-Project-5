@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import os
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from operators import (StageToRedshiftOperator, LoadFactOperator,
@@ -24,7 +23,7 @@ dag = DAG('sparkify',
           default_args=default_args,
           start_date=datetime(2019, 1, 12),
           end_date=datetime(2019, 1, 15),
-          schedule_interval='@daily',
+          schedule_interval='@hourly',
           description='Load and transform data in Redshift with Airflow',
           catchup=True,
           max_active_runs=1

@@ -11,18 +11,6 @@ class StageToRedshiftOperator(BaseOperator):
         CREDENTIALS 'aws_iam_role={}'
         JSON '{}'
     """
-    
-    staging_events_copy = ("""
-        COPY staging_events FROM {}
-        CREDENTIALS 'aws_iam_role={}'
-        JSON {}
-    """)
-
-    staging_songs_copy = ("""
-        COPY staging_songs FROM {}
-        CREDENTIALS 'aws_iam_role={}'
-        JSON 'auto'
-    """)
 
     @apply_defaults
     def __init__(self,
@@ -32,8 +20,6 @@ class StageToRedshiftOperator(BaseOperator):
                  s3_bucket="",
                  s3_key="",
                  json="",
-                 delimiter="",
-                 ignore_headers=1,
                  *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
@@ -43,8 +29,6 @@ class StageToRedshiftOperator(BaseOperator):
         self.s3_bucket = s3_bucket
         self.s3_key = s3_key
         self.json = json
-        self.delimiter = delimiter
-        self.ignore_headers = ignore_headers
 
     def execute(self, context):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)

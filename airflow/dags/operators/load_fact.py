@@ -77,6 +77,18 @@ class LoadFactOperator(BaseOperator):
         self.read_from_table = read_from_table
 
     def execute(self, context):
+        """
+        This operator is responsible for the insert data into the fact table.
+        
+        The fact table is not dropped when an insert (upsert) is performed into it. 
+        Since Redshift is a columnar database, you need to perform a merge operation which is
+        documented here:
+        https://docs.aws.amazon.com/redshift/latest/dg/merge-specify-a-column-list.html
+        
+        To simplify the merge process, this Operator does the following:
+        1. Creates a merge procedure in Redshift which is provided as part of the operator
+        2. Runs the procedure which performs an UPSERT into Redshift
+        """
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         self.log.info("Upserting into songplays.")
         

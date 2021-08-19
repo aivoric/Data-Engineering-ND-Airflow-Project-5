@@ -21,6 +21,15 @@ class DataQualityOperator(BaseOperator):
         self.expected_result = expected_result
 
     def execute(self, context):
+        """
+        This operator receives a SQL statement and expected result. It then compares
+        then results of the SQL statement with the expected result.
+        
+        Currently it supports only one parametrised expected result: "not_empty" which
+        checks whether the returned result is not empty.
+        
+        Can be expanded to do other checks.
+        """
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         self.log.info(f"Launching test. Test description: {self.test_description}")
         result = redshift.get_records(self.sql)

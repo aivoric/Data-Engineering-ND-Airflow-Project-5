@@ -24,6 +24,14 @@ class LoadDimensionOperator(BaseOperator):
         self.table_name = table_name
 
     def execute(self, context):
+        """
+        This operator is used to query a Redshift table using the provided sql_insert
+        statement, and then insert the results to a dimension table provided in table_name.
+        
+        If insert_mode is set to False, then the sql_drop, and sql_create statements
+        should be provided as they are used to drop the table, and then re-create it, before
+        the sql_insert statement is run.
+        """
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         if not self.insert_mode:
             self.log.info(f"Table drop is enabled. Dropping table {self.table_name}")
