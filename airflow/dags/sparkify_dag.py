@@ -5,10 +5,6 @@ from operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from sql.insert_queries import user_table_insert, song_table_insert,\
     artist_table_insert, time_table_insert
-from sql.drop_queries import user_table_drop, song_table_drop,\
-    artist_table_drop, time_table_drop
-from sql.create_queries import user_table_create, song_table_create,\
-    artist_table_create, time_table_create
 
 default_args = {
     'owner': 'sparkify',
@@ -66,8 +62,6 @@ load_user_dimension_table = LoadDimensionOperator(
     redshift_conn_id="redshift",
     insert_mode=False,
     sql_insert=user_table_insert,
-    sql_drop=user_table_drop,
-    sql_create=user_table_create,
     table_name="users"
 )
 
@@ -77,8 +71,6 @@ load_song_dimension_table = LoadDimensionOperator(
     redshift_conn_id="redshift",
     insert_mode=False,
     sql_insert=song_table_insert,
-    sql_drop=song_table_drop,
-    sql_create=song_table_create,
     table_name="songs"
 )
 
@@ -88,8 +80,6 @@ load_artist_dimension_table = LoadDimensionOperator(
     redshift_conn_id="redshift",
     insert_mode=False,
     sql_insert=artist_table_insert,
-    sql_drop=artist_table_drop,
-    sql_create=artist_table_create,
     table_name="artists"
 )
 
@@ -99,8 +89,6 @@ load_time_dimension_table = LoadDimensionOperator(
     redshift_conn_id="redshift",
     insert_mode=False,
     sql_insert=time_table_insert,
-    sql_drop=time_table_drop,
-    sql_create=time_table_create,
     table_name="time"
 )
 
