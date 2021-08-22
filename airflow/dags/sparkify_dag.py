@@ -10,7 +10,8 @@ default_args = {
     'owner': 'sparkify',
     'depends_on_past': False,
     'retries': 3,
-    'retry_delay': timedelta(minutes=5),
+    #'retry_delay': timedelta(minutes=5),
+    'retry_delay': timedelta(seconds=5),
     'email_on_failure': False,
     'email_on_retry': False,
 }
@@ -31,7 +32,7 @@ stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
     redshift_conn_id="redshift",
-    aws_role_arn="arn:aws:iam::582160271005:role/redshift_role",
+    aws_role_arn="arn:aws:iam::300259718964:role/RedshiftS3ReadOnly",
     table="staging_events",
     s3_bucket="udacity-dend",
     s3_key="log_data",
@@ -42,7 +43,7 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
     dag=dag,
     redshift_conn_id="redshift",
-    aws_role_arn="arn:aws:iam::582160271005:role/redshift_role",
+    aws_role_arn="arn:aws:iam::300259718964:role/RedshiftS3ReadOnly",
     table="staging_songs",
     s3_bucket="udacity-dend",
     s3_key="song_data",
@@ -92,71 +93,23 @@ load_time_dimension_table = LoadDimensionOperator(
     table_name="time"
 )
 
-check_song_staging_not_empty = DataQualityOperator(
-    task_id='check_song_staging_not_empty',
+data_quality_check = DataQualityOperator(
+    task_id='Run_data_quality_check',
     dag=dag,
-    test_description="Test to check that the table is not empty.",
     redshift_conn_id="redshift",
-    sql="SELECT COUNT(*) FROM staging_songs",
-    expected_result="not_empty",
-)
-
-check_events_staging_not_empty = DataQualityOperator(
-    task_id='check_events_staging_not_empty',
-    dag=dag,
-    test_description="Test to check that the table is not empty.",
-    redshift_conn_id="redshift",
-    sql="SELECT COUNT(*) FROM staging_events",
-    expected_result="not_empty",
-)
-
-check_user_table_not_empty = DataQualityOperator(
-    task_id='check_user_table_not_empty',
-    dag=dag,
-    test_description="Test to check that the table is not empty.",
-    redshift_conn_id="redshift",
-    sql="SELECT COUNT(*) FROM users",
-    expected_result="not_empty",
-)
-
-check_song_table_not_empty = DataQualityOperator(
-    task_id='check_song_table_not_empty',
-    dag=dag,
-    test_description="Test to check that the table is not empty.",
-    redshift_conn_id="redshift",
-    sql="SELECT COUNT(*) FROM songs",
-    expected_result="not_empty",
-)
-
-check_artist_table_not_empty = DataQualityOperator(
-    task_id='check_artist_table_not_empty',
-    dag=dag,
-    test_description="Test to check that the table is not empty.",
-    redshift_conn_id="redshift",
-    sql="SELECT COUNT(*) FROM artists",
-    expected_result="not_empty",
-)
-
-check_time_table_not_empty = DataQualityOperator(
-    task_id='check_time_table_not_empty',
-    dag=dag,
-    test_description="Test to check that the table is not empty.",
-    redshift_conn_id="redshift",
-    sql="SELECT COUNT(*) FROM time",
-    expected_result="not_empty",
+    data_quality_checks = [
+            {'name': 'Users table not null values.', 'check_sql': "SELECT COUNT(*) FROM users WHERE userid is null", 'expected_result': 0},
+            {'name': 'Artists table no null values.', 'check_sql': "SELECT COUNT(*) FROM artists WHERE name IS NULL", 'expected_result': 0},
+            {'name': 'Songs table not null values.', 'check_sql': "SELECT COUNT(*) FROM songs WHERE songid is null", 'expected_result': 0},
+            {'name': 'No weekdays with null.', 'check_sql': "SELECT COUNT(*) FROM time WHERE weekday IS NULL", 'expected_result': 0},
+            {'name': 'No users without a name.', 'check_sql': "SELECT COUNT(*) FROM users WHERE first_name IS NULL", 'expected_result': 0},
+        ]
 )
 
 end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
 
-start_operator >> stage_events_to_redshift >> check_song_staging_not_empty
-start_operator >> stage_songs_to_redshift >> check_events_staging_not_empty
-check_song_staging_not_empty >> load_songplays_table
-check_events_staging_not_empty >> load_songplays_table
-load_songplays_table >> load_user_dimension_table
-load_songplays_table >> load_song_dimension_table
-load_songplays_table >> load_artist_dimension_table
-load_songplays_table >> load_time_dimension_table
-load_user_dimension_table >> check_user_table_not_empty >> end_operator
-load_song_dimension_table >> check_song_table_not_empty >> end_operator
-load_artist_dimension_table >> check_artist_table_not_empty >> end_operator
-load_time_dimension_table >> check_time_table_not_empty >> end_operator
+start_operator >> [stage_events_to_redshift, stage_songs_to_redshift]
+[stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table
+load_songplays_table >> [load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table]
+[load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table] >> data_quality_check
+data_quality_check >> end_operator

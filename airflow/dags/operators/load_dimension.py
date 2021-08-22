@@ -11,14 +11,14 @@ class LoadDimensionOperator(BaseOperator):
     def __init__(self,
                  redshift_conn_id="",
                  insert_mode=False,
-                 sql_create="",
+                 sql_insert="",
                  table_name="",
                  *args, **kwargs):
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
         self.insert_mode = insert_mode
-        self.sql_create = sql_create
+        self.sql_insert = sql_insert
         self.table_name = table_name
 
     def execute(self, context):

@@ -10,6 +10,7 @@ class StageToRedshiftOperator(BaseOperator):
         FROM '{}'
         CREDENTIALS 'aws_iam_role={}'
         JSON '{}'
+        REGION 'us-west-2';
     """
 
     @apply_defaults

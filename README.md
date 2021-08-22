@@ -75,8 +75,6 @@ An technical explanation about the above can be found here:
 https://stackoverflow.com/questions/121387/fetch-the-row-which-has-the-max-value-for-a-column
 
 
-## Preview of how the DAG looks like in the Airflow UI after successful runs:
+## Preview of how the DAG looks like in the Airflow UI:
 
 ![](sample_1.png)
-
-![](sample_2.png)
