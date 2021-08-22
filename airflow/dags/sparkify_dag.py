@@ -10,8 +10,7 @@ default_args = {
     'owner': 'sparkify',
     'depends_on_past': False,
     'retries': 3,
-    #'retry_delay': timedelta(minutes=5),
-    'retry_delay': timedelta(seconds=5),
+    'retry_delay': timedelta(minutes=5),
     'email_on_failure': False,
     'email_on_retry': False,
 }
